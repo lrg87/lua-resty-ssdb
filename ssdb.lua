@@ -1,6 +1,6 @@
  -- Lua client for https://github.com/ideawu/ssdb
  -- Copyright (c) 2015 Eleme, Inc.
-
+ 
 local spp = require 'spp_lua'
 
 local conversions = {
@@ -102,15 +102,19 @@ local commands = {
     auth            = 'boolean'
 }
 
+
+-- Connection
+
 local Connection = {}
 Connection.__index = Connection
 
-function Connection:new(options)
+function Connection.new(options)
     local self = setmetatable({}, Connection)
+    local options = options or {}
     self.port = options.port or 8888
     self.host = options.host or '127.0.0.1'
     self.auth = options.auth
-    self.timeout = options.time or 0
+    self.timeout = options.timeout or 0
 
     self.sock = nil
     self.commands = {}
@@ -118,7 +122,7 @@ function Connection:new(options)
     return self
 end
 
-function Connection:connect(self)
+function Connection.connect(self)
     local err
 
     self.sock, err = ngx.sock.tcp()
@@ -132,13 +136,111 @@ function Connection:connect(self)
     return self.sock:connect(self.host, self.port)  -- ok, err
 end
 
-function Connection:close(self)
+function Connection.close(self)
     local sock = self.sock
     self.parser:clear()
     self.sock = nil
     return sock:close()
 end
 
-function Connection:encode(self, args)
-    --
+function Connection.encode(self, args)
+    local args = args or {}
+    local list = {}
+
+    print(#args)
+    for _, arg in pairs(args) do
+        local len = string.len(tostring(arg))
+        table.insert(list, string.format('%s\n%s\n', len, arg))
+    end
+    table.insert(list, '\n')
+    return table.concat(list)
 end
+
+function Connection.build(self, _type, data)
+    return conversions[type_](data)
+end
+
+function Connection.request(self)
+    -- lazy connect
+    if not self.sock then
+        local ok, err = self:connect()
+        if err and not ok then
+            return ok, err
+        end
+    end
+
+    -- send commands
+    local cmds = {}
+
+    for _, cmd in pairs(self.commands) do
+        table.insert(cmds, self:encode(cmd))
+    end
+
+    local bytes, err = self.sock:send(table.concat(cmds))
+
+    -- recv response
+    local chunks = {}
+
+    while #chunks < #self.commands do
+        local buf, err, partial = self.sock:receive()
+
+        if not buf and err then
+            self:close()
+            return buf, err
+        end
+
+        self.parser:feed(buf)
+
+        local chunk = self.parser:get()
+
+        if chunk then
+            table.insert(chunks, chunk)
+        end
+
+    end
+
+    -- make response
+    print(chunks)
+end
+
+
+-- Client
+
+local Client = {}
+Client.__index = Client
+
+function Client.new(options)
+    local self = setmetatable({}, Client)
+    self.conn = Connection:new(options)
+
+    for command, _ in pairs(commands) do
+        Client[command] = function(...)
+            local args = {command}
+
+            for _, v in pairs({...}) do
+                table.insert(args, v)
+            end
+
+            table.insert(self.conn.commands, args)
+            return self.conn:request()
+        end
+    end
+
+    return self
+end
+
+function Client.close(self)
+    return self.conn:close()
+end
+
+
+-- exports
+
+return {
+    commands    = commands,
+    Client      = Client,
+    Connection  = Connection,
+    newclient   = function(options)
+        return Client:new(options)
+    end
+}
