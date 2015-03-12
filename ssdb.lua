@@ -125,7 +125,7 @@ end
 function Connection.connect(self)
     local err
 
-    self.sock, err = ngx.sock.tcp()
+    self.sock, err = ngx.socket.tcp()
 
     if err and not sock then
         return sock, err
@@ -147,11 +147,11 @@ function Connection.encode(self, args)
     local args = args or {}
     local list = {}
 
-    print(#args)
     for _, arg in pairs(args) do
         local len = string.len(tostring(arg))
         table.insert(list, string.format('%s\n%s\n', len, arg))
     end
+
     table.insert(list, '\n')
     return table.concat(list)
 end
@@ -182,10 +182,12 @@ function Connection.request(self)
     local chunks = {}
 
     while #chunks < #self.commands do
-        local buf, err, partial = self.sock:receive()
+        local buf, err = self.sock:receive(10)
 
-        if not buf and err then
-            self:close()
+        if not buf then
+            if err == 'timeout' then
+                self:close()
+            end
             return buf, err
         end
 
@@ -200,7 +202,9 @@ function Connection.request(self)
     end
 
     -- make response
-    print(chunks)
+    ngx.log(ngx.INFO, chunks)
+
+    return 'test'
 end
 
 
@@ -216,9 +220,10 @@ function Client.new(options)
     for command, _ in pairs(commands) do
         Client[command] = function(...)
             local args = {command}
+            local para = {...}
 
-            for _, v in pairs({...}) do
-                table.insert(args, v)
+            for i = 2, #para do
+                table.insert(args, para[i])
             end
 
             table.insert(self.conn.commands, args)
