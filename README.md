@@ -1,7 +1,8 @@
 lua-resty-ssdb
 --------------
 
-Lua client for https://github.com/ideawu/ssdb.
+Lua client for [ssdb](https://github.com/ideawu/ssdb) and nginx
+(based on [lua-nginx-module](https://github.com/openresty/lua-nginx-module)).
 
 Exampple
 --------
