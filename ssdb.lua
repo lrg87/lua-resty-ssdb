@@ -101,3 +101,6 @@ local commands = {
     info = 'table',
     auth = 'boolean'
 }
+
+local Connection = {}
+Connection.__index = Connection

@@ -1,18 +1,20 @@
 lua-resty-ssdb
 --------------
 
-Lua client for [ssdb](https://github.com/ideawu/ssdb) and nginx
+The fastest lua client for [ssdb](https://github.com/ideawu/ssdb) and nginx
 (based on [lua-nginx-module](https://github.com/openresty/lua-nginx-module)).
+
+Build
+------
+
+```bash
+$ make
+```
 
 Exampple
 --------
 
-First, build [spp_lua](https://github.com/eleme/spp_lua):
-and then add its path to lua's cpath:
-
 ```lua
-package.cpath = package.cpath .. ';path/to/spp_lua/?.so'
-
 local ssdb = require 'ssdb'
 ```
 
