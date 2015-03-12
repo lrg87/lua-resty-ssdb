@@ -1,0 +1,6 @@
+.*.swp
+.*.swo
+.*.swn
+*.so
+*.o
+test-*.lua
