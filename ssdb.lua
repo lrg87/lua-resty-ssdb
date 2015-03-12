@@ -104,3 +104,41 @@ local commands = {
 
 local Connection = {}
 Connection.__index = Connection
+
+function Connection:new(options)
+    local self = setmetatable({}, Connection)
+    self.port = options.port or 8888
+    self.host = options.host or '127.0.0.1'
+    self.auth = options.auth
+    self.timeout = options.time or 0
+
+    self.sock = nil
+    self.commands = {}
+    self.parser = spp:new()
+    return self
+end
+
+function Connection:connect(self)
+    local err
+
+    self.sock, err = ngx.sock.tcp()
+
+    if err and not sock then
+        return sock, err
+    end
+
+    self.sock:settimeout(self.timeout)
+    self.sock:setkeepalive(true)
+    return self.sock:connect(self.host, self.port)  -- ok, err
+end
+
+function Connection:close(self)
+    local sock = self.sock
+    self.parser:clear()
+    self.sock = nil
+    return sock:close()
+end
+
+function Connection:encode(self, args)
+    --
+end
