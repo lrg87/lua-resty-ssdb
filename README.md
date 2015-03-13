@@ -101,13 +101,21 @@ See [tcpsock:setkeepalive](http://wiki.nginx.org/HttpLuaModule#tcpsock:setkeepal
 `setkeepalive` can be used to make a long connection, e.g., a forever long long connection:
 
 ```lua
-c.conn.sock:setkeepalive(0, 1)
+client:setkeepalive(0, 1)
 ```
 
 ### client:connect()
 
 By default, ssdb is lazy connected, but method `connect` can be used to 
-test if the server is alive.
+test if the server is alive, e.g.
+
+```lua
+ok, err = client.connect()
+if not ok then
+  ngx.log(ngx.ERR, err)
+  return
+end
+```
 
 License
 --------
