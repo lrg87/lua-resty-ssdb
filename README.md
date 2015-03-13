@@ -97,7 +97,12 @@ Set the timeout value in milliseconds for subsequent socket operations, detail s
 ### client:setkeepalive(timeout, size)
 
 See [tcpsock:setkeepalive](http://wiki.nginx.org/HttpLuaModule#tcpsock:setkeepalive).
-Note that you may use `setkeepalive` to make it a long connection.
+
+`setkeepalive` can be used to make a long connection, e.g., a forever long long connection:
+
+```lua
+c.conn.sock:setkeepalive(0, 1)
+```
 
 ### client:connect()
 
