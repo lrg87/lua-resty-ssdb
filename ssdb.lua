@@ -119,13 +119,26 @@ function Connection.new(options)
     self.host = options.host or '127.0.0.1'
     self.auth = options.auth
     self.timeout = options.timeout or 0
-    self.keepalive_timeout = options.keepalive_timeout or 100000
-    self.keepalive_pool_size = options.keepalive_pool_size or 1
 
     self.sock = nil
     self.cmds = {}
     self.parser = spp:new()
     return self
+end
+
+function Connection.setkeepalive(self, ...)
+    if not self.sock then
+        return nil, 'socket not initialized'
+    end
+    return self.sock:setkeepalive(...)
+end
+
+
+function Connection.settimeout(self, ...)
+    if not self.sock then
+        return nil, 'socket not initialized'
+    end
+    return self.sock:settimeout(...)
 end
 
 function Connection.connect(self)
@@ -137,7 +150,6 @@ function Connection.connect(self)
         return sock, err
     end
     self.sock:settimeout(self.timeout)
-    self.sock:setkeepalive(self.keepalive_timeout, self.keepalive_pool_size)
     return self.sock:connect(self.host, self.port)
 end
 
@@ -286,16 +298,23 @@ function Client.close(self)
     return self.conn:close()
 end
 
-function Client.start_pipeline()
+function Client.start_pipeline(self)
     self._pipeline_mode = true
 end
 
-function Client.commit_pipeline()
+function Client.commit_pipeline(self)
     local list = self.conn:request()
     self._pipeline_mode = false
     return list
 end
 
+function Client.settimeout(self, ...)
+    return self.conn:settimeout(...)
+end
+
+function Client.setkeepalive(self, ...)
+    return self.conn:setkeepalive(...)
+end
 
 -- exports
 return {
