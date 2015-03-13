@@ -117,6 +117,11 @@ if not ok then
 end
 ```
 
+Documentations
+--------------
+
+Detail docs for ssdb commands can be found at https://github.com/hit9/ssdb.api.docs.
+
 License
 --------
 
