@@ -316,6 +316,10 @@ function Client.setkeepalive(self, ...)
     return self.conn:setkeepalive(...)
 end
 
+function Client.connect(self, ...)
+    return self.conn:connect(...)
+end
+
 -- exports
 return {
     newclient = function(options)
