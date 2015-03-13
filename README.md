@@ -99,6 +99,11 @@ Set the timeout value in milliseconds for subsequent socket operations, detail s
 See [tcpsock:setkeepalive](http://wiki.nginx.org/HttpLuaModule#tcpsock:setkeepalive).
 Note that you may use `setkeepalive` to make it a long connection.
 
+### client:connect()
+
+By default, ssdb is lazy connected, but method `connect` can be used to 
+test if the server is alive.
+
 License
 --------
 
