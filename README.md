@@ -49,6 +49,11 @@ vals = client:commit_pipeline()
 - `err` is not `nil` on any errors.
 - `res` is `nil` on any errors.
 
+### Value Types
+
+Values returned from commands can be found from
+table `commands` in [ssdb.lua](ssdb.lua).
+
 ### Errors
 
 All possible `err` values for all ssdb commands: 
