@@ -39,7 +39,7 @@ end
 
 function longs(length)
     local t = {}
-    for i = 1, length do 
+    for i = 1, length do
         table.insert(t, 'v')
     end
     return table.concat(t)
@@ -211,7 +211,9 @@ function test_multi_set_get_del()
 end
 
 function test_hash()
-    local hash = uk() .. 'hash'
+    local hash_ = uk()
+    local hash = hash_ .. 'hash'
+    -- hset/hget/hsize/hexists/hdel
     local hkey, hval = uk(), 'v'
     local res, err = c:hset(hash, hkey, hval)
     assert(res == 1 and not err)
@@ -225,10 +227,44 @@ function test_hash()
     assert(res == 1 and not err)
     local res, err = c:hexists(hash, hkey)
     assert(res == false and not err)
+    -- multi_h*
+    local hkey1, hval1 = uk(), 'v1'
+    local hkey2, hval2 = uk(), 'v2'
+    local hkey3, hval3 = uk(), 'v3'
+    local hkey4, hval4 = uk(), 'v4'
+    local res, err = c:multi_hset(hash, hkey1, hval1, hkey2, hval2,
+    hkey3, hval3, hkey4, hval4)
+    assert(res == 4 and not err)
+    assert(c:hsize(hash) == 4)
+    local res, err = c:multi_hget(hash, hkey1, hkey2)
+    assert(table.eql(res, {hkey1, hval1, hkey2, hval2}) and not err)
+    local res, err = c:multi_hdel(hash, hkey3, hkey4)
+    assert(res == 2 and not err)
+    -- hlist/hrlist/hscan/hrscan/hgetall/hkeys/hclear
+    local res, err = c:hlist(hash_, hash, 1)
+    assert(table.eql(res, {hash}) and not err)
+    local res, err = c:hrlist(hash, hash_, 1)
+    assert(table.eql(res, {}) and not err)
+    local res, err = c:hkeys(hash, '', '', -1)
+    assert(table.eql(res, {hkey1, hkey2}) and not err)
+    local res, err = c:hscan(hash, '', '', -1)
+    assert(table.eql(res, {hkey1, hval1, hkey2, hval2}) and not err)
+    local res, err = c:hrscan(hash, '', '', 1)
+    assert(table.eql(res, {hkey2, hval2}) and not err)
+    local res, err = c:hgetall(hash)
+    assert(table.eql(res, {hkey1, hval1, hkey2, hval2}) and not err)
+    local res, err = c:hclear(hash)
+    assert(res == 2 and not err)
+    -- hincr
     local hkey, hval = uk(), 1
     assert(c:hset(hash, hkey, hval) == 1)
-    local res, err = c:hincr(hash, hkey, hval)
-    assert(res == hval + 1 and not err)
+    local res, err = c:hincr(hash, hkey, 2)
+    assert(res == hval + 2 and not err)
+end
+
+function test_zset()
+    local zset_ = uk()
+    local zset = zset_ .. 'zset'
 end
 
 function test_bigstr()
@@ -259,3 +295,4 @@ test_keys_scan_rscan()
 test_multi_set_get_del()
 test_bigstr()
 test_hash()
+test_zset()
