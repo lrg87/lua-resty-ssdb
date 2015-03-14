@@ -37,6 +37,14 @@ function table.eql(a, b)
     return true
 end
 
+function longs(length)
+    local t = {}
+    for i = 1, length do 
+        table.insert(t, 'v')
+    end
+    return table.concat(t)
+end
+
 -- cases
 function test_set()
     local ok, err = c:set(uk(), 'v')
@@ -202,6 +210,34 @@ function test_multi_set_get_del()
     assert(not c:exists(key3))
 end
 
+function test_hash()
+    local hash = uk() .. 'hash'
+    local hkey, hval = uk(), 'v'
+    local res, err = c:hset(hash, hkey, hval)
+    assert(res == 1 and not err)
+    local res, err = c:hget(hash, hkey)
+    assert(res == hval and not err)
+    local res, err = c:hexists(hash, hkey)
+    assert(res == true and not err)
+    local res, err = c:hsize(hash, hkey)
+    assert(res == 1 and not err)
+    local res, err = c:hdel(hash, hkey)
+    assert(res == 1 and not err)
+    local res, err = c:hexists(hash, hkey)
+    assert(res == false and not err)
+    local hkey, hval = uk(), 1
+    assert(c:hset(hash, hkey, hval) == 1)
+    local res, err = c:hincr(hash, hkey, hval)
+    assert(res == hval + 1 and not err)
+end
+
+function test_bigstr()
+    local key, val = uk(), longs(65535 * 3)
+    local res, err = c:set(key, val)
+    assert(res == 1 and not err)
+    assert(c:get(key) == val)
+end
+
 -- Run tests
 test_set()
 test_get()
@@ -221,3 +257,5 @@ test_substr()
 test_strlen()
 test_keys_scan_rscan()
 test_multi_set_get_del()
+test_bigstr()
+test_hash()
