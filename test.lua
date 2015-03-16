@@ -264,7 +264,66 @@ end
 
 function test_zset()
     local zset_ = uk()
+    -- zset/zget/zdel/zexists
     local zset = zset_ .. 'zset'
+    local zkey, zval = uk(), 1
+    local res, err = c:zset(zset, zkey, zval)
+    assert(res == 1 and not err)
+    local res, err = c:zget(zset, zkey)
+    assert(res == zval and not err)
+    local res, err = c:zincr(zset, zkey, 1)
+    assert(res == 2 and not err)
+    local res, err = c:zexists(zset, zkey)
+    assert(res == true and not err)
+    local res, err = c:zdel(zset, zkey)
+    assert(res == 1 and not err)
+    -- multi_z*
+    local key1, val1 = uk(), 1
+    local key2, val2 = uk(), 2
+    local key3, val3 = uk(), 3
+    local key4, val4 = uk(), 4
+    local res, err = c:multi_zset(zset, key1, val1, key2, val2,
+    key3, val3, key4, val4)
+    assert(res == 4 and not err)
+    local res, err = c:multi_zget(zset, key1, key2, key3, key4)
+    assert(table.eql(res, {key1, tostring(val1), key2, tostring(val2),
+    key3, tostring(val3), key4, tostring(val4)}) and not err)
+    local res, err = c:multi_zdel(zset, key3, key4)
+    assert(res == 2 and not err)
+    -- zkeys*..
+    local res, err = c:zsize(zset)
+    assert(res == 2 and not err)
+    local res, err = c:zlist(zset_, zset, -1)
+    assert(table.eql(res, {zset}) and not err)
+    local res, err = c:zrlist(zset, zset_, -1)
+    assert(table.eql(res, {}) and not err)
+    local res, err = c:zkeys(zset, '', '', '', -1)
+    assert(table.eql(res, {key1, key2}) and not err)
+    local res, err = c:zscan(zset, '', val1, val2, -1)
+    assert(table.eql(res, {key1, tostring(val1), key2, tostring(val2)}) and not err)
+    local res, err = c:zrscan(zset, '', val2, val1, -1)
+    assert(table.eql(res, {key2, tostring(val2), key1, tostring(val1)}) and not err)
+    local res, err = c:zrank(zset, key1)
+    assert(res == 0 and not err)
+    local res, err = c:zrrank(zset, key1)
+    assert(res == 1 and not err)
+    local res, err = c:zrange(zset, val1 - 1, -1)
+    assert(table.eql(res, {key1, tostring(val1), key2, tostring(val2)}) and not err)
+    local res, err = c:zrrange(zset, val1 - 1, -1)
+    assert(table.eql(res, {key2, tostring(val2), key1, tostring(val1)}) and not err)
+    local res, err = c:zcount(zset, val1, val2)
+    assert(res == 2 and not err)
+    local res, err = c:zsum(zset, val1, val2)
+    assert(res == 3 and not err)
+    local res, err = c:zavg(zset, val1, val2)
+    assert(res == 1.5 and not err)
+    local res, err = c:zremrangebyrank(zset, 0, 0)
+    assert(res == 1 and not err)
+    local res, err = c:zremrangebyscore(zset, 0, val2)
+    assert(res == 1 and not err)
+    assert(c:multi_zset(zset, key1, val1, key2, val2) == 2)
+    local res, err = c:zclear(zset)
+    assert(res == 2 and not err)
 end
 
 function test_bigstr()
