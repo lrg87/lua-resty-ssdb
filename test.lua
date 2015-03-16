@@ -8,6 +8,10 @@
 --   access_by_lua_file path/to/lua-resty-ssdb/test.lua;
 --
 -- SSDB 127.0.0.1:8888
+--
+-- How to test
+--
+--   curl 0.0.0.0/index.html
 
 local ssdb = require 'ssdb'
 local c = ssdb.newclient()
@@ -25,12 +29,24 @@ function uk()
 end
 
 function table.eql(a, b)
+    if type(a) ~= 'table' then
+        return false
+    end
+
+    if type(b) ~= 'table' then
+        return false
+    end
+
     if #a ~= #b then
         return false
     end
 
     for k, v in pairs(a) do
-        if b[k] ~= v then
+        if type(v) == 'table' then
+            if not table.eql(v, b[k]) then
+                return false
+            end
+        elseif v ~= b[k] then
             return false
         end
     end
@@ -60,11 +76,11 @@ end
 
 function test_setx()
     local key = uk()
-    local res, err = c:setx(key, 'v', 1)
+    local res, err = c:setx(key, 'v', 0.1)
     assert (res == 1 and not err)
     local res, err = c:get(key)
     assert(res == 'v' and not err)
-    os.execute('sleep 1.5')
+    os.execute('sleep 0.1')
     local res, err = c:get(key)
     assert(not res and err == 'not_found')
 end
@@ -72,9 +88,9 @@ end
 function test_expire()
     local key = uk()
     c:set(key, 'v')
-    local res, err = c:expire(key, 1)
+    local res, err = c:expire(key, 0.1)
     assert(res == 1 and not err)
-    os.execute('sleep 1.5')
+    os.execute('sleep 0.1')
     local res, err = c:get(key)
     assert(not res and err == 'not_found')
 end
@@ -333,6 +349,19 @@ function test_bigstr()
     assert(c:get(key) == val)
 end
 
+function test_pipeline()
+    local key, val = uk(), 2
+    c:start_pipeline()
+    c:set(key, val)
+    c:incr(key, 3) -- +3
+    c:incr(key, 4) -- +4
+    local t = c:commit_pipeline()
+    assert(c:get(key) == '9')
+    assert(table.eql(t, {
+        {1, nil}, {5, nil}, {9, nil}
+    }))
+end
+
 -- Run tests
 test_set()
 test_get()
@@ -352,6 +381,7 @@ test_substr()
 test_strlen()
 test_keys_scan_rscan()
 test_multi_set_get_del()
-test_bigstr()
 test_hash()
 test_zset()
+test_pipeline()
+test_bigstr()
