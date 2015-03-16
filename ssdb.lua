@@ -1,12 +1,14 @@
  -- Lua client for https://github.com/ideawu/ssdb
  -- Copyright (c) 2015 Eleme, Inc.
- 
+
 local spp = require 'spp_lua'
 
 -- Lua 5.1 unpack
 -- Lua 5.2+ table.unpack
 local unpack = unpack or table.unpack
+local tlen = rawlen or table.getn
 
+-- conversions from buffer to lua type
 local conversions = {
     number = function(t)
         return tonumber(t[1])
@@ -106,15 +108,14 @@ local commands = {
     auth            = 'boolean'
 }
 
+-- Conn
+local Conn = {}
+Conn.__index = Conn
 
--- Connection
-
-local Connection = {}
-Connection.__index = Connection
-
-function Connection.new(options)
-    local self = setmetatable({}, Connection)
+function Conn.new(options)
+    local self = setmetatable({}, Conn)
     local options = options or {}
+
     self.port = options.port or 8888
     self.host = options.host or '127.0.0.1'
     self.auth = options.auth
@@ -122,26 +123,18 @@ function Connection.new(options)
 
     self.sock = nil
     self.cmds = {}
-    self.parser = spp:new()
+    self.parser = spp.new()
     return self
 end
 
-function Connection.setkeepalive(self, ...)
+function Conn.setkeepalive(self, ...)
     if not self.sock then
         return nil, 'socket not initialized'
     end
     return self.sock:setkeepalive(...)
 end
 
-
-function Connection.settimeout(self, ...)
-    if not self.sock then
-        return nil, 'socket not initialized'
-    end
-    return self.sock:settimeout(...)
-end
-
-function Connection.connect(self)
+function Conn.connect(self)
     local err
 
     self.sock, err = ngx.socket.tcp()
@@ -149,18 +142,18 @@ function Connection.connect(self)
     if err and not sock then
         return sock, err
     end
-    self.sock:settimeout(self.timeout)
+    self.sock:settimeout(timeout)
     return self.sock:connect(self.host, self.port)
 end
 
-function Connection.close(self)
+function Conn.close(self)
     local sock = self.sock
     self.parser:clear()
     self.sock = nil
     return sock:close()
 end
 
-function Connection.encode(self, args)
+function Conn.encode(self, args)
     local args = args or {}
     local reqs = {}
 
@@ -169,40 +162,30 @@ function Connection.encode(self, args)
         local req = string.format('%s\n%s\n', len, arg)
         table.insert(reqs, req)
     end
-
     table.insert(reqs, '\n')
     return table.concat(reqs)
 end
 
-function Connection.send(self)
+function Conn.send(self, cmds)
     local reqs = {}
-
-    for _, cmd in pairs(self.cmds) do
+    for _, cmd in pairs(cmds) do
         table.insert(reqs, self:encode(cmd))
     end
     return self.sock:send(table.concat(reqs))
 end
 
-function Connection.build(self, _type, data)
-    return conversions[_type](data)
-end
-
-function Connection.recv(self)
+function Conn.recv(self, len)
     local ress = {}
-
-    while #ress < #self.cmds do
+    while tlen(ress) < len do
         while true do
             local line, err = self.sock:receive()
-
             if not line then
                 if err == 'timeout' then
                     self:close()
                 end
                 return line, err
             end
-
             self.parser:feed(line .. '\n')
-
             if line == '' then
                 break
             end
@@ -215,53 +198,88 @@ function Connection.recv(self)
     return ress, err
 end
 
-function Connection.request(self)
+function Conn.auth_(self, auth)
+    local cmds = {{'auth', auth}}
+    local bytes, err = self:send(cmds)
+    if not bytes then
+        return bytes, err
+    end
+
+    local ress, err = self:recv(tlen(cmds))
+    if not ress then
+        return ress, err
+    end
+
+    local list = self:cast(cmds, ress)
+    assert(tlen(list) == 1)
+    return unpack(list[1])
+end
+
+function Conn.cast(self, cmds, ress)
+    local list = {}
+    for idx, res in pairs(ress) do
+        local cmd = cmds[idx]
+        local status = table.remove(res, 1)
+        local val, err
+        if status == 'ok' then
+            local type = commands[cmd[1]]
+            val = conversions[type](res)
+        else
+            err = status
+        end
+        table.insert(list, {val, err})
+    end
+    return list
+end
+
+function Conn.cmd_push(self, name, args)
+    local cmd = {name}
+    for _, v in pairs(args) do
+        table.insert(cmd, v)
+    end
+    return table.insert(self.cmds, cmd)
+end
+
+function Conn.cmd_clear(self)
+    while tlen(self.cmds) > 0 do
+        table.remove(self.cmds, 1)
+    end
+end
+
+function Conn.request(self)
     -- lazy connect
     if not self.sock then
         local ok, err = self:connect()
         if not ok then
             return ok, err
         end
+
+        -- make auth
+        if self.auth then
+            local ok, err = self:auth_(self.auth)
+            if not ok then
+                return ok, err
+            end
+        end
     end
 
     -- send request
-    local bytes, err = self:send()
+    local bytes, err = self:send(self.cmds)
     if not bytes then
         return bytes, err
     end
 
-    -- recv response
-    local ress, err = self:recv()
+    -- recv responses
+    local ress, err = self:recv(tlen(self.cmds))
     if not ress then
         return ress, err
     end
 
     -- build values
-    local list = {}
-
-    for idx, res in pairs(ress) do
-        local cmd = self.cmds[idx]
-        local ok = table.remove(res, 1)
-
-        local val
-        local err
-        if ok == 'ok' then
-            local type = commands[cmd[1]]
-            val = self:build(type, res)
-        else
-            err = ok
-        end
-        table.insert(list, {val, err})
-    end
-
-    -- clear commands
-    for idx, _ in pairs(self.cmds) do
-        self.cmds[idx] = nil
-    end
-
+    local list = self:cast(self.cmds, ress)
+    self:cmd_clear()
     return list
 end
-
 
 -- Client
 local Client = {}
@@ -269,29 +287,31 @@ Client.__index = Client
 
 function Client.new(options)
     local self = setmetatable({}, Client)
-    self.conn = Connection:new(options)
+    self.conn = Conn.new(options)
     self._pipeline_mode = false
 
-    -- make methods for this instance
+    -- make methods
     for name, _ in pairs(commands) do
-        Client[name] = function(...)
-            -- queue request
-            local args = {...}
-            local reqs = {name}
-
-            for i = 2, #args do
-                table.insert(reqs, args[i])
-            end
-
-            table.insert(self.conn.cmds, reqs)
-            -- send request
+        Client[name] = function(self, ...)
+            self.conn:cmd_push(name, {...})
             if not self._pipeline_mode then
-                return unpack(self.conn:request()[1])
+                local list, err = self.conn:request()
+                if not list then
+                    return list, err
+                end
+                return unpack(list[1])
             end
         end
     end
-
     return self
+end
+
+function Client.setkeepalive(self, ...)
+    return self.conn:setkeepalive(...)
+end
+
+function Client.connect(self, ...)
+    return self.conn:connect(...)
 end
 
 function Client.close(self)
@@ -303,9 +323,8 @@ function Client.start_pipeline(self)
 end
 
 function Client.commit_pipeline(self)
-    local list = self.conn:request()
     self._pipeline_mode = false
-    return list
+    return self.conn:request()
 end
 
 function Client.cancel_pipeline(self)
@@ -315,22 +334,10 @@ function Client.cancel_pipeline(self)
     self._pipeline_mode = false
 end
 
-function Client.settimeout(self, ...)
-    return self.conn:settimeout(...)
-end
-
-function Client.setkeepalive(self, ...)
-    return self.conn:setkeepalive(...)
-end
-
-function Client.connect(self, ...)
-    return self.conn:connect(...)
-end
-
 -- exports
 return {
-    version = '0.0.1',
+    __version__ = '0.0.1',
     newclient = function(options)
-        return Client:new(options)
+        return Client.new(options)
     end
 }
