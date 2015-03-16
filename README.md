@@ -77,7 +77,7 @@ options (with default values):
 {
     host = '127.0.0.1',
     port = 8888,
-    auth = nil,  -- currently not supported
+    auth = nil,  -- lazy auto authed
     timeout = 0
 }
 ```
@@ -97,11 +97,6 @@ Commit pipeline to ssdb server, return table of multiple vals like `{res, err}`.
 ### client:cancel_pipeline()
 
 Cancel current pipeline.
-
-### client:settimeout(time)
-
-Set the timeout value in milliseconds for subsequent socket operations, detail see 
-[tcpsock:settimeout](http://wiki.nginx.org/HttpLuaModule#tcpsock:settimeout).
 
 ### client:setkeepalive(timeout, size)
 
