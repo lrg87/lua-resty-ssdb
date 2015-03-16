@@ -308,6 +308,13 @@ function Client.commit_pipeline(self)
     return list
 end
 
+function Client.cancel_pipeline(self)
+    for idx, _ in pairs(self.conn.cmds) do
+        self.conn.cmds[idx] = nil
+    end
+    self._pipeline_mode = false
+end
+
 function Client.settimeout(self, ...)
     return self.conn:settimeout(...)
 end
