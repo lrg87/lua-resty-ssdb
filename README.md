@@ -94,6 +94,10 @@ Start pipeline.
 
 Commit pipeline to ssdb server, return table of multiple vals like `{res, err}`.
 
+### client:cancel_pipeline()
+
+Cancel current pipeline.
+
 ### client:settimeout(time)
 
 Set the timeout value in milliseconds for subsequent socket operations, detail see 
