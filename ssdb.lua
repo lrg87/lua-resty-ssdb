@@ -93,7 +93,7 @@ local commands = {
     qback           = 'string',
     qget            = 'string',
     qslice          = 'table',
-    qpush           = 'string',
+    qpush           = 'number',
     qpush_front     = 'number',
     qpush_back      = 'number',
     qpop            = 'string',
@@ -329,6 +329,7 @@ end
 
 -- exports
 return {
+    version = '0.0.1',
     newclient = function(options)
         return Client:new(options)
     end
