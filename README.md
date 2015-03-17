@@ -4,6 +4,11 @@ lua-resty-ssdb
 The fastest lua client for [ssdb](https://github.com/ideawu/ssdb) and nginx
 (based on [lua-nginx-module](https://github.com/openresty/lua-nginx-module)).
 
+Version
+-------
+
+v0.0.1
+
 Build
 ------
 
