@@ -1,6 +1,7 @@
 CC= gcc -std=gnu99
 SRC= src/hbuf.c src/spp.c src/spp_lua.c
-LIBS= -lm -llua
+LUA_PREFIX=lua
+LIBS= -lm -l$(LUA_PREFIX)
 DLIB= spp_lua.so
 OBJS= spp_lua.o spp.o hbuf.o
 
@@ -15,8 +16,8 @@ else
 endif
 
 build:
-	$(CC) -c $(SRC)
-	$(CC) $(CFLAGS) $(SRC) -o $(DLIB)
+	$(CC) -c $(SRC)  $(EXTRA_FLAGS)
+	$(CC) $(CFLAGS) $(SRC) -o $(DLIB)  $(EXTRA_FLAGS)
 
 clean:
 	rm $(DLIB) $(OBJS)
