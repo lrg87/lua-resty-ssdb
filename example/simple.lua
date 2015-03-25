@@ -1,4 +1,4 @@
-local ssdb = require('ssdb').newclient()
+local ssdb = require('resty.ssdb.client').newclient()
 
 ok, err = ssdb:connect()
 

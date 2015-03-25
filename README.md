@@ -39,7 +39,7 @@ API Reference
 ### Sample Usage
 
 ```lua
-local ssdb = require 'ssdb'
+local ssdb = require('resty.ssdb.client')
 local client = ssdb.newclient()
 local res, err = client:set('k', 'v')
 local res, err = client:get('k')
@@ -78,7 +78,7 @@ All possible `err` values for all ssdb commands:
 To create a ssdb client:
 
 ```lua
-local ssdb = require 'ssdb'
+local ssdb = require 'resty.ssdb.client'
 local client = ssdb.newclient()
 ```
 

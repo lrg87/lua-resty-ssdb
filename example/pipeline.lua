@@ -1,4 +1,4 @@
-local ssdb = require('ssdb').newclient()
+local ssdb = require('resty.ssdb.client').newclient()
 local unpack = unpack or table.unpack  -- 5.1/5.2+ compact
 
 ssdb:start_pipeline()
