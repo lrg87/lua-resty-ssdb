@@ -13,20 +13,20 @@ Ports
 Version
 -------
 
-v0.0.1
-
-Build
-------
-
-```bash
-$ make
-```
+v0.0.2
 
 Usage
 -----
 
-Add its path to `package.path` and `package.cpath` for lua-nginx-module,
-e.g. :
+Build and copy directory `resty` to your nginx's lua path:
+
+```
+$ cd path/to/lua-resty-ssdb
+$ make
+$ cp -r path/to/lua-resty-ssdb/lib/resty path/to/nginx/lua
+```
+
+`lua path` and `lua cpath` should be configured in your nginx conf like this:
 
 ```
 lua_package_path 'path/to/lua/?.lua;';
