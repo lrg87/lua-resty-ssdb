@@ -1,7 +1,7 @@
 -- Nginx config for http section:
 --
---   lua_package_path 'path/to/lua-resty-ssdb/?.lua;;';
---   lua_package_cpath 'path/to/lua-resty-ssdb/?.so;;';
+--   lua_package_path 'path/to/lua/?.lua;;';
+--   lua_package_cpath 'path/to/lua/?.so;;';
 --
 -- Nginx config for location section
 --

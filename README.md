@@ -29,8 +29,8 @@ Add its path to `package.path` and `package.cpath` for lua-nginx-module,
 e.g. :
 
 ```
-lua_package_path 'path/to/lua-resty-ssdb/?.lua;';
-lua_package_cpath 'path/to/lua-resty-ssdb/?.so;';
+lua_package_path 'path/to/lua/?.lua;';
+lua_package_cpath 'path/to/lua/?.so;';
 ```
 
 API Reference
