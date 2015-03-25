@@ -2,7 +2,7 @@ CC= gcc -std=gnu99
 SRC= src/hbuf.c src/spp.c src/spp_lua.c
 LUA_PREFIX=lua
 LIBS= -lm -l$(LUA_PREFIX)
-DLIB= spp_lua.so
+DLIB= lib/resty/ssdb/spp_lua.so
 OBJS= spp_lua.o spp.o hbuf.o
 
 CFLAGS= -O2 -Wall -fPIC

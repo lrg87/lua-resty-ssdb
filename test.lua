@@ -13,8 +13,8 @@
 --
 --   curl 0.0.0.0/index.html
 
-local ssdb = require 'ssdb'
-local c = ssdb.newclient()
+local ssdb_client = require 'resty.ssdb.client'
+local c = ssdb_client.newclient()
 
 -- utils
 local pack = table.pack or pack
