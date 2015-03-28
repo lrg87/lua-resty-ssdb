@@ -140,4 +140,4 @@ Detail docs for ssdb commands can be found at https://github.com/hit9/ssdb.api.d
 License
 --------
 
-MIT, Copyright (c) 2015 Eleme, Inc. Detail see [LICENSE-MIT]
+MIT, Copyright (c) 2015 Eleme, Inc. Detail see [LICENSE-MIT](LICENSE-MIT)
