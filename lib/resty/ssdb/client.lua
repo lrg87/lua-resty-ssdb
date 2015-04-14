@@ -119,7 +119,7 @@ function Conn.new(options)
     self.port = options.port or 8888
     self.host = options.host or '127.0.0.1'
     self.auth = options.auth
-    self.timeout = options.timeout or 0
+    self.timeout = options.timeout or 1.0
 
     self.sock = nil
     self.cmds = {}
@@ -142,7 +142,7 @@ function Conn.connect(self)
     if err and not sock then
         return sock, err
     end
-    self.sock:settimeout(timeout)
+    self.sock:settimeout(self.timeout)
     return self.sock:connect(self.host, self.port)
 end
 
