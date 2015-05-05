@@ -6,6 +6,7 @@ DLIB= spp_lua.so
 OBJS= spp_lua.o spp.o hbuf.o
 
 CFLAGS= -O2 -Wall -fPIC
+DFLAGS= -D"RESTY=1"
 LINUX_CFLAGS= -shared $(LIBS)
 MACOSX_CFLAGS= -bundle -undefined dynamic_lookup
 
@@ -17,7 +18,7 @@ endif
 
 build:
 	$(CC) -c $(SRC)  $(EXTRA_FLAGS)
-	$(CC) $(CFLAGS) $(SRC) -o $(DLIB)  $(EXTRA_FLAGS)
+	$(CC) $(CFLAGS) $(SRC) -o $(DLIB) $(DFLAGS) $(EXTRA_FLAGS)
 
 clean:
 	rm $(DLIB) $(OBJS)
