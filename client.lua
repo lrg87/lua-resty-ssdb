@@ -1,7 +1,7 @@
  -- Lua client for https://github.com/ideawu/ssdb
  -- Copyright (c) 2015 Eleme, Inc.
 
-local spp = require 'resty.ssdb.spp_lua'
+local spp = require 'resty.ssdb.spp_lua.spp_lua'
 
 -- Lua 5.1 unpack
 -- Lua 5.2+ table.unpack

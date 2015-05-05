@@ -1,24 +1,6 @@
-CC= gcc -std=gnu99
-SRC= src/hbuf.c src/spp.c src/spp_lua.c
-LUA_PREFIX=lua
-LIBS= -lm -l$(LUA_PREFIX)
-DLIB= spp_lua.so
-OBJS= spp_lua.o spp.o hbuf.o
+# vim:set noet:
 
-CFLAGS= -O2 -Wall -fPIC
-DFLAGS= -D"RESTY=1"
-LINUX_CFLAGS= -shared $(LIBS)
-MACOSX_CFLAGS= -bundle -undefined dynamic_lookup
+default: build
 
-ifeq ($(shell uname), Darwin)
-	CFLAGS += $(MACOSX_CFLAGS)
-else
-	CFLAGS += $(LINUX_CFLAGS)
-endif
-
-build:
-	$(CC) -c $(SRC)  $(EXTRA_FLAGS)
-	$(CC) $(CFLAGS) $(SRC) -o $(DLIB) $(DFLAGS) $(EXTRA_FLAGS)
-
-clean:
-	rm $(DLIB) $(OBJS)
+.DEFAULT:
+	DFLAGS=-DSPP_LIB_PATH=resty_ssdb_spp_lua_spp_lua make $@ -C spp_lua

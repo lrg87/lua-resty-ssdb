@@ -1,0 +1,3 @@
+[submodule "spp_lua"]
+	path = spp_lua
+	url = https://github.com/hit9/spp_lua
