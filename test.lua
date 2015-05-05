@@ -14,7 +14,7 @@
 --   curl 0.0.0.0/index.html
 
 local ssdb_client = require 'resty.ssdb.client'
-local c = ssdb_client.newclient()
+local c = ssdb_client.newclient({timeout=5000})
 
 -- utils
 local pack = table.pack or pack
