@@ -119,7 +119,7 @@ function Conn.new(options)
     self.port = options.port or 8888
     self.host = options.host or '127.0.0.1'
     self.auth = options.auth
-    self.timeout = options.timeout or 1.0
+    self.timeout = options.timeout or 1000
 
     self.sock = nil
     self.cmds = {}
