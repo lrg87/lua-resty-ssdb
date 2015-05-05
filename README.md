@@ -23,6 +23,7 @@ Build and copy directory `resty` to your nginx's lua path:
 ```bash
 $ git clone https://github.com/eleme/lua-resty-ssdb path/to/nginx/lua/resty/ssdb
 $ cd path/to/nginx/lua/lua/resty/ssdb
+$ git submodule update --init
 $ make
 ```
 
