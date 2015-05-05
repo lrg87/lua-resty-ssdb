@@ -20,17 +20,17 @@ Usage
 
 Build and copy directory `resty` to your nginx's lua path:
 
-```
-$ cd path/to/lua-resty-ssdb
+```bash
+$ git clone https://github.com/eleme/lua-resty-ssdb path/to/nginx/lua/resty/ssdb
+$ cd path/to/nginx/lua/lua/resty/ssdb
 $ make
-$ cp -r path/to/lua-resty-ssdb/lib/resty path/to/nginx/lua
 ```
 
 `lua path` and `lua cpath` should be configured in your nginx conf like this:
 
 ```
-lua_package_path 'path/to/lua/?.lua;';
-lua_package_cpath 'path/to/lua/?.so;';
+lua_package_path 'path/to/nginx/lua/?.lua;';
+lua_package_cpath 'path/to/nginx/lua/?.so;';
 ```
 
 API Reference
