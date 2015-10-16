@@ -1,5 +1,5 @@
  -- Lua client for https://github.com/ideawu/ssdb
- -- Copyright (c) 2015 Eleme, Inc.
+ -- Copyright (c) 2015 Eleme, Inc. Chao Wang <hit9@icloud.com>
 
 local spp = require 'resty.ssdb.spp_lua.spp_lua'
 
